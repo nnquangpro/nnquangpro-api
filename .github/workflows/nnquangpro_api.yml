@@ -1,0 +1,88 @@
+name: NNQUANGPRO-SCRIPT-RUNNER
+on:
+  workflow_dispatch:
+    inputs:
+      packages:
+        description: "Packages"
+        type: choice
+        options:
+          - nnq_encodev1
+          - nnq_enchashv1
+        required: true
+      id:
+        description: "Request ID"
+        required: true
+        default: "Not_define"
+      urlid:
+        description: "Requested file id"
+        required: true
+      package_id:
+        description: "Package Gdrive ID"
+        required: true
+
+jobs:
+  test-linux:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+    name: "NNQUANGPRO-API (${{ github.event.inputs.packages }}, ubuntu-22.04)"
+    env:
+      # https://bugs.php.net/bug.php?id=79445
+      PHP_BUILD_CURL_OPTS: '--retry 3 --retry-delay 5 --connect-timeout 10'
+    steps:
+      - uses: actions/checkout@v2
+      - name: install dependencies
+        run: |
+          set -ex
+          ./install-dependencies.sh
+      - name: get files & packages
+        run: |
+          set -ex
+          sudo mkdir /runner
+          sudo mkdir /gdrive
+          sudo mkdir /output
+          sudo mkdir /save
+          sudo curl -o /runner/input.zip -X POST -F "very_key=${{ secrets.very_key }}" "https://encode.nnquangpro.com/dl.php?id=${{ github.event.inputs.urlid }}"
+          sudo chmod -R 777 /runner /gdrive /output /save
+          sudo apt install python2 -y
+      - name: Acquire Google access token
+        id: google-access-token
+        uses: playeveryware/action-google-access-token@v1
+        with:
+          credentials: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_CREDENTIALS }}
+          scope: 'https://www.googleapis.com/auth/drive.readonly'
+
+      - name: Download PHP from Gdrive
+        uses: playeveryware/action-google-drive-download@v1
+        with:
+          token: ${{ steps.google-access-token.outputs.token }}
+          file-id: "1E-792bGbcVmS_6WlzOks_F0gPmlP6jf0"
+          path: "/gdrive/php.tar.gz"
+
+      - name: Download Tool from Gdrive
+        uses: playeveryware/action-google-drive-download@v1
+        with:
+          token: ${{ steps.google-access-token.outputs.token }}
+          file-id: ${{ github.event.inputs.package_id }}
+          path: "/gdrive/packages.tar.gz"
+
+      - name: run API
+        timeout-minutes: 7
+        run: |
+          set -ex
+          sudo ./api/${{ github.event.inputs.packages }}/runner.sh /runner/input.zip "${{ github.event.inputs.packages }}" "${{ github.event.inputs.id }}" "$(pwd)"
+      - name: Compress outputs
+        run: |
+          set -ex
+          output_file="/save/nnquangpro-output-$(date +"%d-%m-%y_%H.%m.%S")-compressed.zip"
+          cd /output && zip -9 -r $output_file * && cd -
+          echo "output_file=$output_file" >> $GITHUB_ENV
+      - name: Return success
+        if: success()
+        run: |
+          curl -X POST -F "very_key=${{ secrets.very_key }}" -F "ID=${{ github.event.inputs.id }}" -F "decompiler=@${{ env.output_file }}" https://encode.nnquangpro.com/postv1.php
+      - name: Return failed
+        if: '!(success())'
+        run: |
+          curl -X POST -F "very_key=${{ secrets.very_key }}" -F "ID=${{ github.event.inputs.id }}" -F "type=${{ github.event.inputs.packages }}" https://encode.nnquangpro.com/failed.php
