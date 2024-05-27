@@ -7,7 +7,7 @@ on:
         type: choice
         options:
           - nnq_encodev1
-          - nnq_enchashv1
+          - nnq_hashencodev1
         required: true
       id:
         description: "Request ID"
