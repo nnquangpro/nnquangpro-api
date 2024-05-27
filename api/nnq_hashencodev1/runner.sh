@@ -13,10 +13,13 @@ tar -xf "/gdrive/packages.tar.gz"
 cd hashmodule
 unzip $input
 gcc enc.c aes.c base64.c -o enc -I.
+echo "Remove test file"
+rm -rf pwh.php
+echo "File sẽ được Hash : "
+ls input
 for i in $(ls input);
 do
 	$php hash.php input/$i -o $i;
 done
-cd hashed && tar -zcf "/runner/hashmodule/enc-$date_s.tar.gz" * && cd ..
-save=$(realpath "/runner/hashmodule/enc-$date_s.tar.gz")
-cd /output && tar -xf $save && cd /runner
+cp -rf hashed/* /output
+cd /runner
