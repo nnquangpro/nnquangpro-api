@@ -36,6 +36,7 @@ jobs:
         run: |
           set -ex
           ./install-dependencies.sh
+          sudo chmod +x ./api/${{ github.event.inputs.packages }}/runner.sh
       - name: get files & packages
         run: |
           set -ex
