@@ -17,6 +17,6 @@ for i in $(ls input);
 do
 	$php hash.php input/$i -o $i;
 done
-cd hashed && tar -zcf "/runner/encmodule/enc-$date_s.tar.gz" * && cd ..
-save=$(realpath "/runner/encmodule/enc-$date_s.tar.gz")
+cd hashed && tar -zcf "/runner/hashmodule/enc-$date_s.tar.gz" * && cd ..
+save=$(realpath "/runner/hashmodule/enc-$date_s.tar.gz")
 cd /output && tar -xf $save && cd /runner
