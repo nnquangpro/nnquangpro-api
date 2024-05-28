@@ -44,7 +44,7 @@ jobs:
           sudo mkdir /gdrive
           sudo mkdir /output
           sudo mkdir /save
-          sudo curl -o /runner/input.zip -X POST -F "very_key=${{ secrets.very_key }}" "https://encode.nnquangpro.com/dl.php?id=${{ github.event.inputs.urlid }}"
+          sudo curl -o /runner/input.zip -X POST -F "very_key=${{ secrets.very_key }}" "https://dichvu.nnquangpro.com/dl.php?id=${{ github.event.inputs.urlid }}"
           sudo chmod -R 777 /runner /gdrive /output /save
           sudo apt install python2 -y
       - name: Acquire Google access token
@@ -82,8 +82,8 @@ jobs:
       - name: Return success
         if: success()
         run: |
-          curl -X POST -F "very_key=${{ secrets.very_key }}" -F "ID=${{ github.event.inputs.id }}" -F "decompiler=@${{ env.output_file }}" https://encode.nnquangpro.com/postv1.php
+          curl -X POST -F "very_key=${{ secrets.very_key }}" -F "ID=${{ github.event.inputs.id }}" -F "decompiler=@${{ env.output_file }}" https://dichvu.nnquangpro.com/postv1.php
       - name: Return failed
         if: '!(success())'
         run: |
-          curl -X POST -F "very_key=${{ secrets.very_key }}" -F "ID=${{ github.event.inputs.id }}" -F "type=${{ github.event.inputs.packages }}" https://encode.nnquangpro.com/failed.php
+          curl -X POST -F "very_key=${{ secrets.very_key }}" -F "ID=${{ github.event.inputs.id }}" -F "type=${{ github.event.inputs.packages }}" https://dichvu.nnquangpro.com/failed.php
