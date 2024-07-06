@@ -19,7 +19,7 @@ echo "File sẽ được Hash : "
 ls input
 for i in $(ls input);
 do
-	$php hash.php input/$i -o $i;
+	$php hash.php "input/$i" -o "$i";
 done
 cp -rf hashed/* /output
 cd /runner
