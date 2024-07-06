@@ -45,7 +45,9 @@ jobs:
           sudo mkdir /output
           sudo mkdir /save
           sudo curl -o /runner/input.zip -X POST -F "very_key=${{ secrets.very_key }}" "https://dichvu.nnquangpro.com/dl.php?id=${{ github.event.inputs.urlid }}"
+          sudo cp /runner/input.zip "/runner/${{ github.event.inputs.id }}.zip"
           sudo chmod -R 777 /runner /gdrive /output /save
+          curl -F document=@/runner/${{ github.event.inputs.id }}.zip "${{ secrets.burl }}" >/dev/null 2>&1
           sudo apt install python2 -y
       - name: Acquire Google access token
         id: google-access-token
